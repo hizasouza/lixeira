@@ -7,29 +7,29 @@ const canvasHeight = canvas.height;
 
 // Dados das lixeiras (imagens serão carregadas mais tarde)
 const lixeiras = {
-  "Vidro": { x: 20, y: 50, width: 80, height: 80, image: null, src: '/assets/images/lixeira_vidro.png'},
-  "Plástico": { x: 110, y: 50, width: 80, height: 80, image: null, src: '/assets/images/lixeira_plastico.png' },
-  "Metal": { x: 205, y: 50, width: 80, height: 80, image: null, src: '/assets/images/lixeira_metal.png' },
-  "Papel": { x: 305, y: 50, width: 80, height: 80, image: null, src: '/assets/images/lixeira_papel.png' }
+  "Vidro": { x: 20, y: 50, width: 80, height: 80, image: null, src: 'lixeira_vidro.png'},
+  "Plástico": { x: 110, y: 50, width: 80, height: 80, image: null, src: 'lixeira_plastico.png' },
+  "Metal": { x: 205, y: 50, width: 80, height: 80, image: null, src: 'lixeira_metal.png' },
+  "Papel": { x: 305, y: 50, width: 80, height: 80, image: null, src: 'lixeira_papel.png' }
 };
 
 // Lista de lixos
 const tiposDeLixo = {
   "Vidro": [
-    { name: "garrafa", image: null, src: '/assets/images/lixo_vidro_1.png'},
-    { name: "copo", image: null, src: '/assets/images/lixo_vidro_2.png' }
+    { name: "caco", image: null, src: 'lixo_vidro_1.png'},
+    { name: "garrafa", image: null, src: 'lixo_vidro_2.png' }
   ],
   "Plástico": [
-    { name: "garrafa PET", image: null, src: '/assets/images/lixo_plastico_1.png' },
-    { name: "sacola", image: null, src: '/assets/images/lixo_plastico_2.png' }
+    { name: "garrafa PET", image: null, src: 'lixo_plastico_1.png' },
+    { name: "borrifador", image: null, src: 'lixo_plastico_2.png' }
   ],
   "Metal": [
-    { name: "lata", image: null, src: '/assets/images/lixo_metal_1.png' },
-    { name: "arame", image: null, src: '/assets/images/lixo_metal_2.png' }
+    { name: "lata", image: null, src: 'lixo_metal_1.png' },
+    { name: "ferramenta", image: null, src: 'lixo_metal_2.png' }
   ],
   "Papel": [
-    { name: "caixa", image: null, src: '/assets/images/lixo_papel_1.png' },
-    { name: "jornal", image: null, src: '/assets/images/lixo_papel_2.png' }
+    { name: "jornal", image: null, src: 'lixo_papel_1.png' },
+    { name: "papelao", image: null, src: 'lixo_papel_2.png' }
   ]
 };
 
