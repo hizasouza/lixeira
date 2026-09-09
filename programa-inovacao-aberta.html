@@ -1,0 +1,1202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambiente Real como Ativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --paper:#ffffff;
+  --ground:#F1F5F8;
+  --sunk:#E7EDF2;
+  --ink:#0A2436;
+  --ink-2:#2E5069;
+  --muted:#6B8598;
+  --line:rgba(10,36,54,.14);
+  --line-soft:rgba(10,36,54,.08);
+
+  --azul:#0E6FA8;
+  --azul-deep:#08304A;
+  --azul-soft:rgba(14,111,168,.10);
+  --verde:#12876A;
+  --verde-soft:rgba(18,135,106,.10);
+  --laranja:#E4711F;
+  --laranja-soft:rgba(228,113,31,.12);
+
+  --night:#07293F;      /* faixas escuras: iguais nos dois temas */
+  --night-2:#0B3A57;
+  --night-ink:#E6F0F6;
+  --night-muted:#9DBACD;
+  --night-line:rgba(230,240,246,.16);
+
+  --shadow:0 1px 2px rgba(8,48,74,.06),0 10px 30px -18px rgba(8,48,74,.35);
+  --shadow-lift:0 2px 4px rgba(8,48,74,.08),0 22px 44px -22px rgba(8,48,74,.45);
+
+  --r:14px;
+  --maxw:1180px;
+  --fs-display:clamp(2.35rem,4.6vw,3.55rem);
+  --fs-h2:clamp(1.75rem,3.2vw,2.7rem);
+  --fs-h3:1.18rem;
+  --fs-body:1.0425rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E2130;
+    --ground:#091823;
+    --sunk:#132B3C;
+    --ink:#E8F1F6;
+    --ink-2:#B7CEDD;
+    --muted:#89A6B9;
+    --line:rgba(232,241,246,.16);
+    --line-soft:rgba(232,241,246,.09);
+    --azul:#4EA9DC;
+    --azul-deep:#9AD2F1;
+    --azul-soft:rgba(78,169,220,.14);
+    --verde:#3FBF98;
+    --verde-soft:rgba(63,191,152,.14);
+    --laranja:#F79A4B;
+    --laranja-soft:rgba(247,154,75,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.8);
+    --shadow-lift:0 2px 4px rgba(0,0,0,.45),0 22px 44px -22px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E2130;
+  --ground:#091823;
+  --sunk:#132B3C;
+  --ink:#E8F1F6;
+  --ink-2:#B7CEDD;
+  --muted:#89A6B9;
+  --line:rgba(232,241,246,.16);
+  --line-soft:rgba(232,241,246,.09);
+  --azul:#4EA9DC;
+  --azul-deep:#9AD2F1;
+  --azul-soft:rgba(78,169,220,.14);
+  --verde:#3FBF98;
+  --verde-soft:rgba(63,191,152,.14);
+  --laranja:#F79A4B;
+  --laranja-soft:rgba(247,154,75,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.8);
+  --shadow-lift:0 2px 4px rgba(0,0,0,.45),0 22px 44px -22px rgba(0,0,0,.9);
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:var(--fs-body);
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Archivo,"IBM Plex Sans",sans-serif;margin:0;text-wrap:balance;letter-spacing:-.02em;line-height:1.08}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.section{padding:104px 0;position:relative}
+.section + .section{border-top:1px solid var(--line-soft)}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--azul);display:flex;align-items:center;gap:10px;margin-bottom:18px;
+}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--laranja);display:block;flex:none}
+.eyebrow--night{color:var(--night-muted)}
+.lead{font-size:1.16rem;color:var(--ink-2);max-width:64ch;line-height:1.6}
+.small{font-size:.9rem;color:var(--muted)}
+.note{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hd{display:flex;flex-direction:column;gap:18px;margin-bottom:44px;max-width:70ch}
+.hd h2{font-size:var(--fs-h2);font-weight:700}
+
+/* ---------- progresso + nav ---------- */
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--azul),var(--verde) 60%,var(--laranja));z-index:60}
+#dots{position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:55;display:none;flex-direction:column;gap:14px}
+#dots a{
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.1em;color:var(--muted);
+}
+#dots i{display:block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);transition:all .3s ease;flex:none}
+#dots a span{opacity:0;transform:translateX(-6px);transition:all .3s ease;white-space:nowrap;text-transform:uppercase}
+#dots a:hover span,#dots a.on span{opacity:1;transform:none}
+#dots a.on i{background:var(--laranja);border-color:var(--laranja);transform:scale(1.25)}
+#dots a:focus-visible{outline:2px solid var(--azul);outline-offset:4px;border-radius:4px}
+@media(min-width:1340px){#dots{display:flex}}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(160deg,var(--night) 0%,var(--night-2) 62%,#0E4A6B 100%);color:var(--night-ink);position:relative;overflow:hidden}
+.hero::after{
+  content:"";position:absolute;inset:auto -10% -60% 40%;height:70%;
+  background:radial-gradient(ellipse at center,rgba(228,113,31,.20),transparent 62%);pointer-events:none;
+}
+.hero .wrap{position:relative;z-index:2;padding-top:82px;padding-bottom:74px}
+.brandline{display:flex;align-items:center;gap:14px;margin-bottom:52px;flex-wrap:wrap}
+.mark{display:flex;align-items:center;gap:9px;font-family:Archivo;font-weight:700;letter-spacing:-.01em;font-size:.98rem}
+.mark svg{display:block}
+.brandline .sep{width:1px;height:16px;background:var(--night-line)}
+.brandline .tag{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--night-muted)}
+.hero h1{font-size:var(--fs-display);font-weight:800;max-width:21ch;color:#fff}
+.hero h1 em{font-style:normal;color:#FFB877;}
+.hero .sub{margin-top:24px;max-width:60ch;font-size:1.16rem;color:#CFE3EF;line-height:1.58}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.chip{
+  display:flex;align-items:center;gap:9px;padding:9px 15px 9px 12px;border-radius:999px;
+  border:1px solid var(--night-line);background:rgba(255,255,255,.05);
+  font-size:.855rem;color:#DCEAF3;
+}
+.chip b{color:#fff;font-weight:600}
+.chip .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.hero-flow{margin-top:56px;border-top:1px solid var(--night-line);padding-top:30px}
+.hero-flow svg{width:100%;height:auto;display:block;overflow:visible}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:44px;border-top:1px solid var(--night-line)}
+.hero-stats div{padding:22px 22px 6px 0;border-right:1px solid var(--night-line)}
+.hero-stats div:last-child{border-right:0}
+.hero-stats .n{font-family:Archivo;font-weight:700;font-size:2rem;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.hero-stats .n small{font-size:1rem;font-weight:600;color:#FFB877}
+.hero-stats .l{font-size:.82rem;color:var(--night-muted);line-height:1.4;margin-top:4px}
+@media(max-width:820px){.hero-stats{grid-template-columns:repeat(2,1fr)}.hero-stats div:nth-child(2){border-right:0}}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:940px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:660px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s ease,border-color .35s ease}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift);border-color:var(--azul)}
+.card h3{font-size:var(--fs-h3);font-weight:700;margin-bottom:10px}
+.card p{color:var(--ink-2);font-size:.95rem}
+.ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:16px;background:var(--azul-soft);color:var(--azul)}
+.ico svg{width:20px;height:20px;display:block}
+.ico.v{background:var(--verde-soft);color:var(--verde)}
+.ico.o{background:var(--laranja-soft);color:var(--laranja)}
+.ul{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:9px}
+.ul li{display:flex;gap:10px;font-size:.93rem;color:var(--ink-2);line-height:1.45}
+.ul li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--laranja);margin-top:8px;flex:none}
+.ul.v li::before{background:var(--verde)}
+.ul.a li::before{background:var(--azul)}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:30px;box-shadow:var(--shadow)}
+.panel--sunk{background:var(--sunk);box-shadow:none}
+figure{margin:0}
+figure svg{width:100%;height:auto;display:block;overflow:visible}
+figcaption{margin-top:16px;font-size:.82rem;color:var(--muted);line-height:1.5}
+.svg-t{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;fill:var(--muted)}
+.svg-v{font-family:Archivo,sans-serif;font-weight:700;font-size:14px;fill:var(--ink)}
+.svg-l{font-family:"IBM Plex Sans",sans-serif;font-size:12px;fill:var(--ink-2)}
+
+/* ---------- caso real ---------- */
+.case{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+@media(max-width:940px){.case{grid-template-columns:1fr}}
+.proj{display:flex;gap:16px;padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--paper);transition:border-color .3s,transform .3s}
+.proj:hover{border-color:var(--verde);transform:translateX(3px)}
+.proj + .proj{margin-top:14px}
+.proj .ico{margin-bottom:0}
+.proj h4{font-size:1rem;font-weight:700;margin-bottom:4px}
+.proj p{font-size:.9rem;color:var(--ink-2)}
+.proj .st{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--verde);margin-top:8px;display:block}
+
+/* ---------- problema / futuro ---------- */
+.shift{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;align-items:stretch;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper)}
+.shift .col{padding:28px}
+.shift .col.was{background:var(--sunk)}
+.shift .mid{display:grid;place-items:center;background:var(--paper);border-left:1px solid var(--line);border-right:1px solid var(--line);color:var(--laranja)}
+.shift h4{font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.shift .col.now h4{color:var(--verde)}
+.shift ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.shift li{font-size:.95rem;line-height:1.4;padding-left:0}
+.shift .col.was li{color:var(--muted)}
+.shift .col.now li{color:var(--ink);font-weight:500}
+@media(max-width:760px){.shift{grid-template-columns:1fr}.shift .mid{padding:10px 0;border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(90deg) scale(.9)}}
+
+/* ---------- jornada ---------- */
+.journey{position:relative;margin-top:12px}
+.rail{position:absolute;left:23px;top:12px;bottom:12px;width:2px;background:var(--line);border-radius:2px}
+.rail i{position:absolute;top:0;left:0;width:100%;height:0;background:linear-gradient(180deg,var(--azul),var(--verde) 55%,var(--laranja));border-radius:2px;transition:height .25s linear}
+.step{position:relative;padding-left:70px;padding-bottom:26px}
+.step:last-child{padding-bottom:0}
+.node{
+  position:absolute;left:0;top:2px;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;
+  background:var(--paper);border:1px solid var(--line);color:var(--muted);
+  font-family:Archivo;font-weight:700;font-size:1rem;box-shadow:var(--shadow);
+  transition:all .4s cubic-bezier(.2,.7,.2,1);z-index:2;
+}
+.step.on .node{background:var(--azul-deep);border-color:transparent;color:#fff;transform:scale(1.06)}
+:root[data-theme="dark"] .step.on .node,
+.step.on .node{color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .step.on .node{background:var(--azul);color:#04202F}}
+:root[data-theme="dark"] .step.on .node{background:var(--azul);color:#04202F}
+.step .body{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;transition:border-color .35s ease,box-shadow .35s ease,transform .35s ease}
+.step.on .body{border-color:var(--azul);box-shadow:var(--shadow-lift)}
+.step h3{font-size:1.08rem;font-weight:700;margin-bottom:6px}
+.step p{color:var(--ink-2);font-size:.95rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.meta span{
+  font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.06em;
+  padding:5px 10px;border-radius:6px;background:var(--sunk);color:var(--ink-2);border:1px solid var(--line-soft);
+}
+.meta span b{color:var(--ink);font-weight:500}
+@media(max-width:560px){.step{padding-left:60px}.node{width:42px;height:42px}.rail{left:20px}}
+
+.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+@media(max-width:760px){.crit{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.crit{grid-template-columns:1fr}}
+.crit div{display:flex;gap:11px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:var(--paper);border:1px solid var(--line)}
+.crit b{display:block;font-size:.92rem;font-weight:600}
+.crit em{font-style:normal;font-size:.82rem;color:var(--muted);line-height:1.4}
+.crit svg{width:16px;height:16px;color:var(--verde);margin-top:3px;flex:none}
+
+/* ---------- matriz ---------- */
+.matrix{display:grid;grid-template-columns:1.35fr .65fr;gap:26px;align-items:center}
+@media(max-width:900px){.matrix{grid-template-columns:1fr}}
+.pt{cursor:pointer;transition:transform .2s ease}
+.pt circle.h{fill:transparent}
+.pt:hover circle.c,.pt.sel circle.c{r:11}
+.pt circle.c{transition:r .2s ease,fill .2s ease}
+.pt:focus{outline:none}
+.pt:focus-visible circle.c{stroke:var(--laranja);stroke-width:3}
+.mx-info{border-left:3px solid var(--laranja);padding-left:20px}
+.mx-info .k{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--laranja)}
+.mx-info h4{font-size:1.15rem;font-weight:700;margin:8px 0 8px}
+.mx-info p{font-size:.93rem;color:var(--ink-2)}
+.mx-info .sc{display:flex;gap:22px;margin-top:16px}
+.mx-info .sc div{display:flex;flex-direction:column}
+.mx-info .sc b{font-family:Archivo;font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.mx-info .sc span{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- indicadores ---------- */
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s ease}
+.kpi:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift)}
+.kpi .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.kpi .v{font-family:Archivo;font-weight:800;font-size:2.2rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.kpi .u{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:right;max-width:11ch}
+.kpi h4{font-size:.98rem;font-weight:700}
+.kpi p{font-size:.88rem;color:var(--ink-2)}
+.kpi figure{margin-top:auto}
+
+/* ---------- opções ---------- */
+.opt{position:relative;display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:var(--r);border:1px solid var(--line);background:var(--paper);box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s ease,border-color .3s}
+.opt:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift)}
+.opt.rec{border-color:var(--laranja)}
+.opt .flag{position:absolute;top:-11px;left:24px;background:var(--laranja);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:5px}
+.opt .num{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.14em;color:var(--muted)}
+.opt h3{font-size:1.12rem;font-weight:700}
+.opt p{font-size:.92rem;color:var(--ink-2)}
+.bars{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.bars .row{display:grid;grid-template-columns:88px 1fr 34px;align-items:center;gap:10px}
+.bars .lab{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bars .track{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.bars .fill{height:100%;border-radius:3px;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.bars .val{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.tl-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+.tl-tags span{font-family:"IBM Plex Mono",monospace;font-size:.65rem;padding:4px 9px;border-radius:5px;background:var(--sunk);color:var(--ink-2)}
+
+.callout{
+  margin-top:22px;border-radius:var(--r);padding:28px 30px;
+  background:linear-gradient(135deg,var(--night),var(--night-2));color:var(--night-ink);
+  display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start;
+}
+.callout .badge{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.10);color:#FFB877}
+.callout h4{color:#fff;font-size:1.12rem;font-weight:700;margin-bottom:8px}
+.callout p{color:#CFE3EF;font-size:.96rem;max-width:76ch}
+.callout .seq{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.callout .seq span{font-family:"IBM Plex Mono",monospace;font-size:.7rem;padding:6px 12px;border-radius:6px;border:1px solid var(--night-line);color:#DCEAF3}
+@media(max-width:560px){.callout{grid-template-columns:1fr}}
+
+/* ---------- próximos passos ---------- */
+.next{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.next{grid-template-columns:1fr}}
+.horizon{border-top:3px solid var(--azul);border-radius:0 0 var(--r) var(--r);background:var(--paper);border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:24px;box-shadow:var(--shadow)}
+.horizon:nth-child(2){border-top-color:var(--verde)}
+.horizon:nth-child(3){border-top-color:var(--laranja)}
+.horizon .d{font-family:Archivo;font-weight:800;font-size:1.9rem;letter-spacing:-.03em}
+.horizon .d small{font-family:"IBM Plex Mono",monospace;font-size:.66rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.horizon h4{font-size:1rem;font-weight:700;margin:14px 0 10px}
+.decision{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-radius:11px;background:var(--paper);border:1px solid var(--line)}
+.decision b{font-size:.95rem;display:block;margin-bottom:3px}
+.decision p{font-size:.87rem;color:var(--muted)}
+.decision .q{font-family:Archivo;font-weight:700;color:var(--laranja);font-size:1rem;flex:none;width:22px}
+
+footer{background:var(--night);color:var(--night-muted);padding:44px 0;font-size:.86rem}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+footer b{color:#fff;font-family:Archivo;font-weight:700}
+
+/* ---------- reveal ---------- */
+.rv{transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv--off{opacity:0;transform:translateY(20px)}
+@media (prefers-reduced-motion: reduce){
+  .rv,.rv--off{opacity:1!important;transform:none!important;transition:none!important}
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.6s cubic-bezier(.4,0,.2,1) .25s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pop{opacity:0;animation:pop .5s ease forwards}
+@keyframes pop{to{opacity:1}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="dots" aria-label="Navegação da apresentação">
+  <a href="#c1"><i></i><span>Oportunidade</span></a>
+  <a href="#c2"><i></i><span>Caso real</span></a>
+  <a href="#c3"><i></i><span>Problema</span></a>
+  <a href="#c4"><i></i><span>Visão</span></a>
+  <a href="#c5"><i></i><span>Jornada</span></a>
+  <a href="#c6"><i></i><span>Benefícios</span></a>
+  <a href="#c7"><i></i><span>Próximos passos</span></a>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="brandline">
+      <span class="mark">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="9.2" stroke="#FFB877" stroke-width="1.6"/>
+          <path d="M11 1.8v18.4M1.8 11h18.4" stroke="#7FC5E8" stroke-width="1.2" opacity=".55"/>
+          <circle cx="11" cy="11" r="3.4" fill="#E4711F"/>
+        </svg>
+        Hub Conecta Impacta
+      </span>
+      <span class="sep"></span>
+      <span class="tag">Proposta de programa · Inovação aberta</span>
+      <span class="sep"></span>
+      <span class="tag">Set 2026</span>
+    </div>
+
+    <h1>O ambiente real do Sesc é um <em>ativo de inovação</em>. Falta transformá-lo em programa.</h1>
+    <p class="sub">Startups já capitalizadas procuram o que dinheiro não compra: operação real, público real e dados confiáveis para validar suas soluções. Nós temos exatamente isso — e temos as dores que elas podem resolver.</p>
+
+    <div class="chips">
+      <span class="chip"><span class="dot" style="background:#4EA9DC"></span>Investimento principal <b>já capitalizado pela startup</b></span>
+      <span class="chip"><span class="dot" style="background:#3FBF98"></span>Sesc como <b>ambiente de validação</b></span>
+      <span class="chip"><span class="dot" style="background:#F79A4B"></span>Expansão <b>a custo de material</b></span>
+    </div>
+
+    <div class="hero-flow">
+      <p class="note" style="color:#9DBACD;margin-bottom:14px">O ciclo que a proposta institucionaliza</p>
+      <svg viewBox="0 0 1080 118" role="img" aria-label="Ciclo do programa: dor interna, desafio estruturado, chamada pública, startup com capital próprio, piloto em ambiente real, dados e escala">
+        <defs>
+          <linearGradient id="flowg" gradientUnits="userSpaceOnUse" x1="46" y1="40" x2="1034" y2="40">
+            <stop offset="0%" stop-color="#4EA9DC"/><stop offset="55%" stop-color="#3FBF98"/><stop offset="100%" stop-color="#F79A4B"/>
+          </linearGradient>
+        </defs>
+        <line class="draw" style="--len:1000" x1="46" y1="40" x2="1034" y2="40" stroke="url(#flowg)" stroke-width="2"/>
+        <g id="flownodes"></g>
+      </svg>
+    </div>
+
+    <div class="hero-stats">
+      <div><div class="n" data-count="0" data-to="0">R$ 0</div><div class="l">de CAPEX do Sesc na fase de piloto</div></div>
+      <div><div class="n"><span data-count="60" data-to="60">60</span>–<span data-count="90" data-to="90">90</span> <small>dias</small></div><div class="l">do desafio publicado ao dado em campo</div></div>
+      <div><div class="n"><span data-count="0" data-to="2">2</span> <small>casos</small></div><div class="l">já validados como prova de conceito do modelo</div></div>
+      <div><div class="n"><span data-count="0" data-to="7">7</span> <small>etapas</small></div><div class="l">de uma jornada replicável em DN e DRs</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============ 01 OPORTUNIDADE ============ -->
+<section class="section" id="c1">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 01 — Oportunidade identificada</p>
+      <h2>Existe um mercado procurando exatamente o que já temos.</h2>
+      <p class="lead">Startups com fomento e investidores aprovados chegam ao mercado com dinheiro, tecnologia e equipe — e travam no mesmo ponto: não têm onde provar que a solução funciona. O ambiente real é a moeda escassa dessa negociação, e o Sesc a possui em escala nacional.</p>
+    </div>
+
+    <div class="grid g4">
+      <div class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v18M17 6.5H9.8a2.8 2.8 0 000 5.6h4.4a2.8 2.8 0 010 5.6H6"/></svg></div>
+        <h3>A startup tem</h3>
+        <ul class="ul a"><li>Capital de fomento ou investidor</li><li>Tecnologia pronta ou em MVP</li><li>Equipe técnica dedicada</li><li>Urgência por tração e prova</li></ul>
+      </div>
+      <div class="card rv">
+        <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 8v5M12 16.5v.4"/><path d="M10.3 4.2 2.6 17.5A2 2 0 004.3 20.5h15.4a2 2 0 001.7-3L13.7 4.2a2 2 0 00-3.4 0z"/></svg></div>
+        <h3>A startup não tem</h3>
+        <ul class="ul"><li>Ambiente real de operação</li><li>Público em volume e diversidade</li><li>Série de dados confiável</li><li>Chancela institucional</li></ul>
+      </div>
+      <div class="card rv">
+        <div class="ico v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18M5 20.5V9l7-4.5L19 9v11.5"/><path d="M9.5 20.5v-5h5v5"/></svg></div>
+        <h3>O Sesc tem</h3>
+        <ul class="ul v"><li>Unidades operando todos os dias</li><li>Público diverso e recorrente</li><li>Equipes técnicas e infraestrutura</li><li>Confiança institucional consolidada</li></ul>
+      </div>
+      <div class="card rv">
+        <div class="ico v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg></div>
+        <h3>O Sesc quer</h3>
+        <ul class="ul v"><li>Soluções para dores reais</li><li>Custo de inovação reduzido</li><li>Velocidade de experimentação</li><li>Impacto mensurável para o público</li></ul>
+      </div>
+    </div>
+
+    <div class="panel rv" style="margin-top:22px">
+      <figure>
+        <svg viewBox="0 0 1000 250" role="img" aria-label="Diagrama do encaixe entre o que a startup precisa e o que o Sesc oferece, mediado pelo ambiente real de validação">
+          <g class="svg-t" text-anchor="middle">
+            <text x="140" y="24">Oferta da startup</text>
+            <text x="500" y="24">Zona de troca</text>
+            <text x="860" y="24">Oferta do Sesc</text>
+          </g>
+          <rect x="30" y="44" width="220" height="168" rx="12" fill="var(--azul-soft)" stroke="var(--azul)" stroke-width="1"/>
+          <rect x="750" y="44" width="220" height="168" rx="12" fill="var(--verde-soft)" stroke="var(--verde)" stroke-width="1"/>
+          <g class="svg-l" text-anchor="middle">
+            <text x="140" y="82">Capital já captado</text>
+            <text x="140" y="110">Tecnologia</text>
+            <text x="140" y="138">Implantação e configuração</text>
+            <text x="140" y="166">Suporte técnico</text>
+            <text x="140" y="194">Transferência de conhecimento</text>
+            <text x="860" y="82">Unidades em operação</text>
+            <text x="860" y="110">Público e uso diário</text>
+            <text x="860" y="138">Dados de campo</text>
+            <text x="860" y="166">Equipe de acompanhamento</text>
+            <text x="860" y="194">Reputação institucional</text>
+          </g>
+          <path d="M258 128h150" stroke="var(--azul)" stroke-width="2" marker-end="url(#ar1)"/>
+          <path d="M742 128H592" stroke="var(--verde)" stroke-width="2" marker-end="url(#ar2)"/>
+          <defs>
+            <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--azul)"/></marker>
+            <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--verde)"/></marker>
+          </defs>
+          <rect x="410" y="72" width="180" height="112" rx="14" fill="var(--laranja)" opacity=".10"/>
+          <rect x="410" y="72" width="180" height="112" rx="14" fill="none" stroke="var(--laranja)" stroke-width="1.6" stroke-dasharray="5 4"/>
+          <text x="500" y="120" text-anchor="middle" class="svg-v" style="font-size:15px">Validação em</text>
+          <text x="500" y="140" text-anchor="middle" class="svg-v" style="font-size:15px">ambiente real</text>
+          <text x="500" y="164" text-anchor="middle" class="svg-t" style="fill:var(--laranja)">Ativo escasso</text>
+        </svg>
+        <figcaption>A troca não é financeira: é de ativos complementares. Nenhum dos dois lados consegue comprar no mercado o que o outro já possui.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 CASO REAL ============ -->
+<section class="section" id="c2" style="background:var(--sunk)">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 02 — O caso que inspirou a iniciativa</p>
+      <h2>Uma startup bateu à nossa porta. O modelo que ela trouxe era melhor que o nosso.</h2>
+      <p class="lead">Ela já tinha captação via fomento e investidores. Precisava de um ambiente confiável para testar, coletar dados e comprovar resultados. As duas soluções propostas endereçavam dores que já eram nossas.</p>
+    </div>
+
+    <div class="case">
+      <div class="rv">
+        <div class="proj">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 16.5a4 4 0 01.4-8 5.4 5.4 0 0110.4-1.3 3.9 3.9 0 01-.6 9.3z"/><path d="M9 20l1-2M13 20.5l1.2-2.4M16.8 19.6l.8-1.6"/></svg></div>
+          <div>
+            <h4>Estação meteorológica inteligente</h4>
+            <p>Monitoramento local de clima com telemetria contínua — apoio a decisões de operação, segurança de atividades ao ar livre e programação.</p>
+            <span class="st">Dor interna existente · Sensoriamento e dados</span>
+          </div>
+        </div>
+        <div class="proj">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 016 3.6h5v15.8H6a2 2 0 00-2 1.9z"/><path d="M20 5.5a2 2 0 00-2-1.9h-5v15.8h5a2 2 0 012 1.9z"/></svg></div>
+          <div>
+            <h4>Autoempréstimo de livros na biblioteca</h4>
+            <p>Retirada e devolução autônomas pelo usuário — reduz fila, libera a equipe para mediação de leitura e gera dados de circulação do acervo.</p>
+            <span class="st">Dor interna existente · Autoatendimento</span>
+          </div>
+        </div>
+        <div class="card rv" style="margin-top:14px">
+          <h3>O que o modelo revelou</h3>
+          <ul class="ul v">
+            <li>O investimento principal <b>já existia</b> — capital da startup, não do Sesc.</li>
+            <li>O Sesc entra como <b>ambiente de teste</b>, não como comprador.</li>
+            <li>Implantação e configuração <b>por conta da startup</b>.</li>
+            <li>Na expansão, o custo para o Sesc é <b>apenas de materiais</b>.</li>
+            <li>Os dados permitem à startup <b>comprovar resultado e captar mais</b>.</li>
+            <li>O Sesc recebe <b>solução inovadora a custo marginal</b>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel rv">
+        <p class="eyebrow" style="margin-bottom:22px">Quem financia o quê</p>
+        <figure>
+          <svg viewBox="0 0 560 320" role="img" aria-label="Barras comparando a divisão de custo entre Sesc e startup nos modelos de contratação tradicional, piloto do programa e expansão pós-validação">
+            <g class="svg-l">
+              <text x="0" y="34">Contratação tradicional</text>
+              <text x="0" y="140">Piloto Conecta Impacta</text>
+              <text x="0" y="246">Expansão pós-validação</text>
+            </g>
+            <!-- barra 1 -->
+            <rect x="0" y="46" width="520" height="34" rx="6" fill="var(--laranja)" opacity=".9"/>
+            <text x="260" y="68" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#fff;letter-spacing:.08em">SESC 100%</text>
+            <text x="0" y="98" class="svg-t">CAPEX + integração + manutenção + risco de insucesso</text>
+            <!-- barra 2 -->
+            <rect x="0" y="152" width="520" height="34" rx="6" fill="var(--azul)"/>
+            <text x="260" y="174" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#fff;letter-spacing:.08em">STARTUP 100%</text>
+            <text x="0" y="204" class="svg-t">Sesc aporta ambiente, acompanhamento e acesso a dados</text>
+            <!-- barra 3 -->
+            <rect x="0" y="258" width="364" height="34" rx="6" fill="var(--verde)"/>
+            <rect x="368" y="258" width="152" height="34" rx="6" fill="var(--laranja)" opacity=".85"/>
+            <text x="182" y="280" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#fff;letter-spacing:.08em">STARTUP ~70%</text>
+            <text x="444" y="280" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#fff;letter-spacing:.08em">SESC ~30%</text>
+            <text x="0" y="310" class="svg-t">Parcela do Sesc restrita a materiais</text>
+          </svg>
+          <figcaption>Proporções ilustrativas, construídas a partir da estrutura do caso recebido. A curva de risco acompanha a curva de custo: o Sesc só assume valor depois da solução comprovada em campo.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 PROBLEMA ============ -->
+<section class="section" id="c3">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 03 — Problema atual</p>
+      <h2>Hoje, esse encontro depende de sorte.</h2>
+      <p class="lead">O caso funcionou porque uma startup encontrou a porta certa por conta própria. Sem processo, o que deveria ser fluxo permanente continua sendo evento isolado — e a maior parte das nossas dores nunca chega ao ecossistema.</p>
+    </div>
+
+    <div class="panel rv">
+      <figure>
+        <svg viewBox="0 0 1000 210" role="img" aria-label="Fluxo atual interrompido: dores percebidas nas áreas não chegam a virar desafios publicados nem pilotos mensurados">
+          <g>
+            <rect x="10" y="58" width="176" height="76" rx="11" fill="var(--paper)" stroke="var(--line)"/>
+            <text x="98" y="88" text-anchor="middle" class="svg-v" style="font-size:13px">Dor percebida</text>
+            <text x="98" y="108" text-anchor="middle" class="svg-t">na área</text>
+          </g>
+          <path d="M192 96h58" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 5" opacity=".7"/>
+          <g>
+            <rect x="256" y="58" width="176" height="76" rx="11" fill="var(--paper)" stroke="var(--line)" stroke-dasharray="5 4"/>
+            <text x="344" y="88" text-anchor="middle" class="svg-l" style="fill:var(--muted)">Desafio</text>
+            <text x="344" y="108" text-anchor="middle" class="svg-t">não estruturado</text>
+          </g>
+          <g transform="translate(452,96)">
+            <circle r="17" fill="var(--laranja-soft)" stroke="var(--laranja)" stroke-width="1.4"/>
+            <path d="M-6 -6 6 6M6 -6-6 6" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round"/>
+            <text y="38" text-anchor="middle" class="svg-t" style="fill:var(--laranja)">ruptura</text>
+          </g>
+          <g opacity=".45">
+            <rect x="502" y="58" width="176" height="76" rx="11" fill="none" stroke="var(--line)" stroke-dasharray="4 5"/>
+            <text x="590" y="94" text-anchor="middle" class="svg-t">sem vitrine pública</text>
+            <text x="590" y="112" text-anchor="middle" class="svg-t">sem priorização</text>
+          </g>
+          <path d="M684 96h58" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 5" opacity=".4"/>
+          <g opacity=".45">
+            <rect x="748" y="58" width="176" height="76" rx="11" fill="none" stroke="var(--line)" stroke-dasharray="4 5"/>
+            <text x="836" y="94" text-anchor="middle" class="svg-t">piloto isolado</text>
+            <text x="836" y="112" text-anchor="middle" class="svg-t">sem mensuração</text>
+          </g>
+          <text x="500" y="192" text-anchor="middle" class="svg-t">O ecossistema não enxerga nossas dores — e nós não enxergamos o portfólio de soluções disponível</text>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="grid g3 rv" style="margin-top:22px">
+      <div class="card">
+        <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20V6.5M4 6.5s2.5-2 8-2 8 2 8 2v9s-2.5 2-8 2-8-2-8-2"/></svg></div>
+        <h3>Demanda entra pela porta errada</h3>
+        <p>A startup precisa descobrir sozinha quem procurar. Não há canal declarado, critério de entrada nem previsibilidade de resposta.</p>
+      </div>
+      <div class="card">
+        <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7h17M3.5 12h11M3.5 17h6"/></svg></div>
+        <h3>Dor não vira desafio</h3>
+        <p>O que existe são queixas operacionais dispersas. Sem estruturação, o mercado não consegue responder a elas com uma proposta técnica.</p>
+      </div>
+      <div class="card">
+        <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 4 8v8l8 4.5L20 16V8z"/><path d="M4 8l8 4.5L20 8M12 12.5V21"/></svg></div>
+        <h3>Aprendizado não escala</h3>
+        <p>Sem repositório e sem indicadores, o resultado de um piloto morre na unidade onde aconteceu, em vez de virar decisão nacional.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 VISÃO ============ -->
+<section class="section" id="c4" style="background:var(--sunk)">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 04 — Visão de futuro</p>
+      <h2>Do acaso ao processo: um programa permanente de inovação aberta.</h2>
+      <p class="lead">O Hub Conecta Impacta passa a operar como interface entre as dores institucionais e o ecossistema de startups — publicando desafios, recebendo soluções e devolvendo dados de validação.</p>
+    </div>
+
+    <div class="shift rv">
+      <div class="col was">
+        <h4>Hoje</h4>
+        <ul>
+          <li>Porta de entrada informal e imprevisível</li>
+          <li>Dor difusa, descrita em linguagem interna</li>
+          <li>Decisão por convencimento pontual</li>
+          <li>Piloto isolado em uma unidade</li>
+          <li>Custo integral e risco do Sesc</li>
+          <li>Resultado percebido, não comprovado</li>
+        </ul>
+      </div>
+      <div class="mid" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+      </div>
+      <div class="col now">
+        <h4>Com o programa</h4>
+        <ul>
+          <li>Chamada pública com regras e prazos claros</li>
+          <li>Desafio estruturado em linguagem de mercado</li>
+          <li>Priorização por impacto × esforço</li>
+          <li>Portfólio com potencial de escala nacional</li>
+          <li>Custo de material e risco compartilhado</li>
+          <li>Resultado mensurado em dados de campo</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout rv">
+      <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg></div>
+      <div>
+        <h4>A tese em uma frase</h4>
+        <p>Se o ambiente real é o ativo mais escasso para quem inova, o Sesc deixa de ser cliente de tecnologia e passa a ser plataforma de validação — recebendo soluções a custo marginal e devolvendo ao ecossistema a evidência que ele não consegue produzir sozinho.</p>
+        <div class="seq"><span>Dor → Desafio</span><span>Desafio → Chamada</span><span>Chamada → Piloto</span><span>Piloto → Dado</span><span>Dado → Escala</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 JORNADA ============ -->
+<section class="section" id="c5">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 05 — Jornada do programa</p>
+      <h2>Jornada de Descoberta de Desafios</h2>
+      <p class="lead">Sete etapas encadeadas, do workshop com as áreas até a decisão de expansão. Cada etapa tem entregável próprio — o programa pode ser interrompido ou retomado sem perder o que já foi produzido.</p>
+    </div>
+
+    <div class="journey" id="journey">
+      <div class="rail"><i id="railfill"></i></div>
+
+      <div class="step">
+        <div class="node">1</div>
+        <div class="body">
+          <h3>Workshops de descoberta com as áreas</h3>
+          <p>O Hub conduz sessões com áreas do Departamento Nacional e dos Departamentos Regionais para converter problemas percebidos em desafios estruturados — com contexto, restrições, usuários afetados e critério de sucesso explícito.</p>
+          <div class="meta"><span>Entregável: <b>mapa de dores por área</b></span><span>Duração: <b>2 a 3 semanas</b></span><span>Conduzido por: <b>Hub Conecta Impacta</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">2</div>
+        <div class="body">
+          <h3>Priorização por impacto × esforço</h3>
+          <p>Cada desafio recebe nota nos seis critérios de avaliação e é posicionado na matriz. A carteira do ciclo sai do quadrante de alto impacto e baixo esforço — o mesmo em que os dois casos recebidos se encaixam.</p>
+          <div class="meta"><span>Entregável: <b>matriz e nota de corte</b></span><span>Duração: <b>1 semana</b></span><span>Decisão: <b>carteira do ciclo</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">3</div>
+        <div class="body">
+          <h3>Repositório Estratégico de Dores</h3>
+          <p>Base viva e versionada de desafios institucionais, com histórico, área demandante, status e evidências. Deixa de ser documento de projeto e passa a ser ativo permanente do Sesc, consultável por qualquer área.</p>
+          <div class="meta"><span>Entregável: <b>base consultável</b></span><span>Ciclo: <b>atualização contínua</b></span><span>Governança: <b>Hub + áreas</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">4</div>
+        <div class="body">
+          <h3>Publicação dos desafios</h3>
+          <p>Os desafios priorizados vão a público no formato adequado a cada caso: programa contínuo, edital, chamada pública ou portal de inovação. É a vitrine que hoje não existe — e o que transforma dor interna em oportunidade de mercado.</p>
+          <div class="meta"><span>Entregável: <b>chamada publicada</b></span><span>Duração: <b>2 semanas</b></span><span>Formato: <b>edital · portal · chamada</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">5</div>
+        <div class="body">
+          <h3>Mobilização do ecossistema</h3>
+          <p>Startups e pequenos empreendedores se candidatam usando recursos próprios, de investidores ou de fomento para desenvolver a solução. A seleção avalia maturidade técnica, capacidade de execução e aderência ao desafio.</p>
+          <div class="meta"><span>Entregável: <b>propostas selecionadas</b></span><span>Janela: <b>30 a 45 dias</b></span><span>Custo Sesc: <b>R$ 0 de desenvolvimento</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">6</div>
+        <div class="body">
+          <h3>Validação em ambiente real</h3>
+          <p>Piloto em unidade definida, com protocolo de teste, plano de coleta de dados, termos de uso e privacidade acordados e ponto focal do Sesc. A implantação e a configuração são executadas pela própria startup.</p>
+          <div class="meta"><span>Entregável: <b>piloto operando + base de dados</b></span><span>Duração: <b>60 a 90 dias</b></span><span>Execução: <b>startup</b></span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="node">7</div>
+        <div class="body">
+          <h3>Mensuração de resultados e expansão</h3>
+          <p>Comparação com a linha de base, decisão de descontinuar, ajustar ou escalar. A startup leva a evidência para captar novos recursos; o Sesc leva o caso para replicação em outras unidades, ao custo dos materiais.</p>
+          <div class="meta"><span>Entregável: <b>relatório e decisão de escala</b></span><span>Duração: <b>30 dias</b></span><span>Saída: <b>replicação em DRs</b></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:44px" class="rv">
+      <p class="eyebrow">Critérios aplicados na etapa 1</p>
+      <div class="crit">
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 11.5a8 8 0 11-2.6-5.9M20 4v5h-5"/></svg><div><b>Recorrência</b><em>A dor é sistêmica ou um caso isolado de uma unidade?</em></div></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 19V9M10 19V4M16 19v-7M22 19H2"/></svg><div><b>Impacto esperado</b><em>Quantas pessoas e processos são afetados e em que magnitude?</em></div></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><div><b>Esforço de implementação</b><em>Complexidade técnica, integrações e mudança operacional.</em></div></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18M5 20.5V9l7-4.5L19 9v11.5"/></svg><div><b>Benefício institucional</b><em>Aderência à missão, ganho reputacional e de gestão.</em></div></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 4 8v8l8 4.5L20 16V8z"/><path d="M4 8l8 4.5L20 8"/></svg><div><b>Potencial de escala</b><em>Replicabilidade em outras unidades e departamentos.</em></div></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.2 2"/></svg><div><b>Tempo até gerar valor</b><em>Em quanto tempo o benefício aparece depois do piloto?</em></div></div>
+      </div>
+    </div>
+
+    <div class="panel rv" style="margin-top:32px">
+      <p class="eyebrow">Etapa 2 — Matriz de priorização</p>
+      <div class="matrix">
+        <figure>
+          <svg viewBox="0 0 640 460" id="mx" role="img" aria-label="Matriz de priorização impacto versus esforço com nove desafios posicionados. Selecione um ponto para ver o detalhe.">
+            <!-- quadrantes -->
+            <rect x="70" y="40" width="255" height="170" fill="var(--verde-soft)"/>
+            <rect x="325" y="40" width="255" height="170" fill="var(--azul-soft)"/>
+            <rect x="70" y="210" width="255" height="170" fill="var(--laranja-soft)" opacity=".55"/>
+            <rect x="325" y="210" width="255" height="170" fill="transparent"/>
+            <g class="svg-t">
+              <text x="82" y="60">Fazer agora</text>
+              <text x="337" y="60">Planejar e sequenciar</text>
+              <text x="82" y="374">Oportunista</text>
+              <text x="337" y="374">Descartar ou reformular</text>
+            </g>
+            <!-- eixos -->
+            <line x1="70" y1="380" x2="580" y2="380" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="70" y1="40" x2="70" y2="380" stroke="var(--line)" stroke-width="1.5"/>
+            <line x1="325" y1="40" x2="325" y2="380" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 5"/>
+            <line x1="70" y1="210" x2="580" y2="210" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 5"/>
+            <text x="325" y="418" text-anchor="middle" class="svg-t">Esforço de implementação →</text>
+            <text x="30" y="210" text-anchor="middle" class="svg-t" transform="rotate(-90 30 210)">Impacto esperado →</text>
+            <text x="76" y="398" class="svg-t">baixo</text>
+            <text x="556" y="398" class="svg-t" text-anchor="end">alto</text>
+            <g id="mxpoints"></g>
+            <g id="mxlegend">
+              <circle cx="76" cy="440" r="5" fill="var(--verde)"/>
+              <text x="88" y="444" class="svg-t">caso já recebido</text>
+              <circle cx="216" cy="440" r="5" fill="var(--azul)"/>
+              <text x="228" y="444" class="svg-t">desafio ilustrativo</text>
+            </g>
+          </svg>
+          <figcaption>Posições ilustrativas. Os dois desafios em verde são os casos reais que originaram a proposta — ambos caem no quadrante de decisão imediata.</figcaption>
+        </figure>
+        <div class="mx-info" id="mxinfo" aria-live="polite">
+          <span class="k" id="mxk">Caso já recebido</span>
+          <h4 id="mxh">Estação meteorológica inteligente</h4>
+          <p id="mxp">Sensoriamento climático local com telemetria contínua. Investimento da startup já capitalizado; Sesc entra com o ponto de instalação e o acompanhamento.</p>
+          <div class="sc"><div><b id="mxi">8,0</b><span>Impacto</span></div><div><b id="mxe">3,0</b><span>Esforço</span></div><div><b id="mxs">Alta</b><span>Escalabilidade</span></div></div>
+          <p class="small" style="margin-top:16px">Clique nos pontos da matriz para comparar os desafios.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 BENEFÍCIOS ============ -->
+<section class="section" id="c6" style="background:var(--sunk)">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 06 — Benefícios para o Sesc</p>
+      <h2>Cinco ganhos que se acumulam a cada ciclo.</h2>
+      <p class="lead">Os números abaixo são ilustrativos e servem para dimensionar a ordem de grandeza da proposta — não são projeções contratadas. Serão substituídos pelos indicadores reais do primeiro ciclo.</p>
+    </div>
+
+    <div class="grid g3 rv">
+      <div class="kpi">
+        <div class="top"><span class="v" data-count="0" data-to="70" data-suffix="%">70%</span><span class="u">redução ilustrativa</span></div>
+        <h4>Menor custo de inovação</h4>
+        <p>Piloto sem CAPEX e expansão restrita a materiais, contra o custo integral de uma contratação tradicional.</p>
+        <figure>
+          <svg viewBox="0 0 260 96" role="img" aria-label="Rosca comparando custo relativo: modelo tradicional 100 e modelo do programa cerca de 30">
+            <g transform="translate(46,48)">
+              <circle r="32" fill="none" stroke="var(--sunk)" stroke-width="12"/>
+              <circle r="32" fill="none" stroke="var(--verde)" stroke-width="12" stroke-linecap="round"
+                      stroke-dasharray="60 201" transform="rotate(-90)"/>
+              <text y="5" text-anchor="middle" class="svg-v" style="font-size:16px">30</text>
+            </g>
+            <text x="96" y="40" class="svg-t">índice de custo Sesc</text>
+            <text x="96" y="60" class="svg-l">tradicional 100 · programa ~30</text>
+          </svg>
+        </figure>
+      </div>
+
+      <div class="kpi">
+        <div class="top"><span class="v"><span data-count="0" data-to="60">60</span>–<span data-count="0" data-to="90">90</span></span><span class="u">dias até o dado</span></div>
+        <h4>Maior velocidade de experimentação</h4>
+        <p>Do desafio publicado ao primeiro dado em campo, contra o ciclo convencional de especificação, licitação e implantação.</p>
+        <figure>
+          <svg viewBox="0 0 260 96" role="img" aria-label="Barras comparando 12 a 18 meses do ciclo convencional contra 2 a 3 meses do programa">
+            <text x="0" y="20" class="svg-t">ciclo convencional</text>
+            <rect x="0" y="26" width="238" height="14" rx="4" fill="var(--muted)" opacity=".45"/>
+            <text x="234" y="20" class="svg-t" text-anchor="end">12–18 meses</text>
+            <text x="0" y="66" class="svg-t">programa</text>
+            <rect x="0" y="72" width="40" height="14" rx="4" fill="var(--laranja)"/>
+            <text x="50" y="83" class="svg-t" style="fill:var(--laranja)">2–3 meses</text>
+          </svg>
+        </figure>
+      </div>
+
+      <div class="kpi">
+        <div class="top"><span class="v"><span data-count="0" data-to="30">30</span>+</span><span class="u">startups por ciclo</span></div>
+        <h4>Atração de ecossistema</h4>
+        <p>Meta ilustrativa de inscrições por chamada, formando um pipeline permanente de soluções mapeadas — mesmo as não selecionadas.</p>
+        <figure>
+          <svg viewBox="0 0 260 96" role="img" aria-label="Funil do ciclo: 30 startups inscritas, 12 qualificadas, 4 pilotos e 2 escalas">
+            <g class="svg-t" style="font-size:9px">
+              <text x="0" y="16">inscritas</text><text x="70" y="16">qualificadas</text><text x="150" y="16">pilotos</text><text x="212" y="16">escala</text>
+            </g>
+            <rect x="0" y="24" width="58" height="52" rx="5" fill="var(--azul)"/>
+            <rect x="70" y="34" width="58" height="42" rx="5" fill="var(--azul)" opacity=".72"/>
+            <rect x="140" y="48" width="58" height="28" rx="5" fill="var(--verde)"/>
+            <rect x="210" y="58" width="46" height="18" rx="5" fill="var(--laranja)"/>
+            <g class="svg-v" style="font-size:12px" text-anchor="middle" fill="#fff">
+              <text x="29" y="56">30</text><text x="99" y="60">12</text><text x="169" y="66">4</text><text x="233" y="71">2</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+
+      <div class="kpi">
+        <div class="top"><span class="v"><span data-count="0" data-to="1">1</span> → N</span><span class="u">unidades</span></div>
+        <h4>Escalabilidade nacional</h4>
+        <p>O piloto validado em uma unidade vira caso replicável nos Departamentos Regionais, com custo decrescente por implantação.</p>
+        <figure>
+          <svg viewBox="0 0 260 106" role="img" aria-label="Curva de escada mostrando a replicação de uma unidade piloto para várias unidades ao longo dos ciclos">
+            <polyline points="6,84 62,84 62,66 118,66 118,44 174,44 174,20 250,20" fill="none" stroke="var(--verde)" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="6" cy="84" r="4" fill="var(--verde)"/><circle cx="250" cy="20" r="4.5" fill="var(--laranja)"/>
+            <g class="svg-t"><text x="0" y="96">piloto</text><text x="112" y="96">ciclo 2</text><text x="228" y="96">rede</text></g>
+          </svg>
+        </figure>
+      </div>
+
+      <div class="kpi">
+        <div class="top"><span class="v" data-count="0" data-to="100" data-suffix="%">100%</span><span class="u">dos pilotos com dado público</span></div>
+        <h4>Geração de valor para a sociedade</h4>
+        <p>Cada piloto beneficia o público da unidade, gera evidência para a startup captar novos recursos e devolve conhecimento ao ecossistema.</p>
+        <figure>
+          <svg viewBox="0 0 260 106" role="img" aria-label="Três anéis de valor gerado: público atendido, startup capitalizada e conhecimento devolvido ao ecossistema">
+            <circle cx="66" cy="52" r="30" fill="var(--azul)" opacity=".22" stroke="var(--azul)"/>
+            <circle cx="112" cy="52" r="30" fill="var(--verde)" opacity=".22" stroke="var(--verde)"/>
+            <circle cx="158" cy="52" r="30" fill="var(--laranja)" opacity=".22" stroke="var(--laranja)"/>
+            <g class="svg-t" text-anchor="middle"><text x="52" y="16">público</text><text x="112" y="96">startup</text><text x="176" y="16">ecossistema</text></g>
+          </svg>
+        </figure>
+      </div>
+
+      <div class="kpi" style="justify-content:space-between">
+        <div class="top"><span class="v" style="font-size:1.5rem;line-height:1.25">Risco assimétrico<br>a nosso favor</span></div>
+        <p>Se o piloto falha, o Sesc perde tempo de acompanhamento — não orçamento de investimento. Se dá certo, incorpora a solução ao custo dos materiais. É a melhor relação risco-retorno disponível hoje para experimentação institucional.</p>
+        <span class="note">Base do modelo validado no caso recebido</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OPÇÕES DE OPERAÇÃO ============ -->
+<section class="section" id="c6b">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Questão-chave — Como operar a fase de Discovery</p>
+      <h2>Três caminhos para colocar a descoberta de desafios em campo.</h2>
+      <p class="lead">A etapa 1 é a que define a qualidade de todo o resto: desafio mal estruturado gera chamada que ninguém responde. Avaliamos as três alternativas nos mesmos quatro critérios.</p>
+    </div>
+
+    <div class="grid g3">
+      <div class="opt rv">
+        <span class="num">Opção 01</span>
+        <h3>Capacitação interna da equipe do Hub</h3>
+        <p>Formação do time do Hub em facilitação, design estratégico e estruturação de desafios, com material e ritual próprios.</p>
+        <div class="tl-tags"><span>1º ciclo em ~90 dias</span><span>Custo baixo</span><span>Autonomia permanente</span></div>
+        <div class="bars" data-bars>
+          <div class="row"><span class="lab">Custo</span><span class="track"><i class="fill" data-w="22" style="background:var(--verde)"></i></span><span class="val">Baixo</span></div>
+          <div class="row"><span class="lab">Velocidade</span><span class="track"><i class="fill" data-w="45" style="background:var(--laranja)"></i></span><span class="val">Média</span></div>
+          <div class="row"><span class="lab">Profundidade</span><span class="track"><i class="fill" data-w="50" style="background:var(--azul)"></i></span><span class="val">Média</span></div>
+          <div class="row"><span class="lab">Autonomia</span><span class="track"><i class="fill" data-w="92" style="background:var(--verde)"></i></span><span class="val">Alta</span></div>
+        </div>
+        <p class="small"><b>Risco:</b> curva de aprendizado recai sobre o primeiro ciclo, que é justamente o de maior visibilidade.</p>
+      </div>
+
+      <div class="opt rv">
+        <span class="num">Opção 02</span>
+        <h3>Consultoria especializada contratada</h3>
+        <p>Empresa externa conduz o diagnóstico, estrutura os desafios e entrega o repositório e o desenho do programa como produto.</p>
+        <div class="tl-tags"><span>1º ciclo em ~60 dias</span><span>Custo alto</span><span>Método maduro</span></div>
+        <div class="bars" data-bars>
+          <div class="row"><span class="lab">Custo</span><span class="track"><i class="fill" data-w="88" style="background:var(--laranja)"></i></span><span class="val">Alto</span></div>
+          <div class="row"><span class="lab">Velocidade</span><span class="track"><i class="fill" data-w="88" style="background:var(--verde)"></i></span><span class="val">Alta</span></div>
+          <div class="row"><span class="lab">Profundidade</span><span class="track"><i class="fill" data-w="92" style="background:var(--azul)"></i></span><span class="val">Alta</span></div>
+          <div class="row"><span class="lab">Autonomia</span><span class="track"><i class="fill" data-w="28" style="background:var(--laranja)"></i></span><span class="val">Baixa</span></div>
+        </div>
+        <p class="small"><b>Risco:</b> o método sai junto com o fornecedor; o segundo ciclo depende de nova contratação.</p>
+      </div>
+
+      <div class="opt rec rv">
+        <span class="flag">Recomendada</span>
+        <span class="num">Opção 03</span>
+        <h3>Mentoria e facilitação especializada</h3>
+        <p>Um facilitador sênior conduz os primeiros workshops <em>com</em> a equipe do Hub, transferindo método, materiais e critérios enquanto o ciclo acontece.</p>
+        <div class="tl-tags"><span>1º ciclo em ~70 dias</span><span>Custo médio</span><span>Método transferido</span></div>
+        <div class="bars" data-bars>
+          <div class="row"><span class="lab">Custo</span><span class="track"><i class="fill" data-w="52" style="background:var(--laranja)"></i></span><span class="val">Médio</span></div>
+          <div class="row"><span class="lab">Velocidade</span><span class="track"><i class="fill" data-w="78" style="background:var(--verde)"></i></span><span class="val">Alta</span></div>
+          <div class="row"><span class="lab">Profundidade</span><span class="track"><i class="fill" data-w="80" style="background:var(--azul)"></i></span><span class="val">Alta</span></div>
+          <div class="row"><span class="lab">Autonomia</span><span class="track"><i class="fill" data-w="82" style="background:var(--verde)"></i></span><span class="val">Alta</span></div>
+        </div>
+        <p class="small"><b>Risco:</b> exige dedicação real da equipe do Hub durante o ciclo — é a condição da transferência.</p>
+      </div>
+    </div>
+
+    <div class="callout rv">
+      <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21.5h4M12 2.5a6.5 6.5 0 00-3.8 11.8c.5.4.8 1 .8 1.7h6c0-.7.3-1.3.8-1.7A6.5 6.5 0 0012 2.5z"/></svg></div>
+      <div>
+        <h4>Recomendação: modelo híbrido em dois tempos</h4>
+        <p>Contratar mentoria e facilitação especializada para o primeiro ciclo, com cláusula explícita de transferência de método — playbook, templates de desafio, matriz de priorização e roteiro de workshop entregues ao Hub. A partir do segundo ciclo, a equipe interna conduz sozinha e a mentoria fica como apoio pontual. Combina a velocidade da opção 2 com a autonomia da opção 1, sem pagar o custo integral de nenhuma das duas.</p>
+        <div class="seq"><span>Ciclo 1 · facilitação assistida</span><span>Entrega do playbook</span><span>Ciclo 2 · condução interna</span><span>Mentoria sob demanda</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 PRÓXIMOS PASSOS ============ -->
+<section class="section" id="c7" style="background:var(--sunk)">
+  <div class="wrap">
+    <div class="hd rv">
+      <p class="eyebrow">Capítulo 07 — Próximos passos</p>
+      <h2>Um primeiro ciclo em 90 dias, com o que já temos.</h2>
+      <p class="lead">Os dois casos recebidos servem como piloto-zero: já estão estruturados, já têm contraparte identificada e podem rodar em paralelo à montagem do programa.</p>
+    </div>
+
+    <div class="next rv">
+      <div class="horizon">
+        <div class="d">30 <small>primeiros dias</small></div>
+        <h4>Fundação</h4>
+        <ul class="ul a">
+          <li>Definir patrocínio executivo e escopo do programa</li>
+          <li>Escolher o modelo de operação do Discovery</li>
+          <li>Selecionar 3 a 5 áreas para os primeiros workshops</li>
+          <li>Formalizar o piloto-zero com a startup já mapeada</li>
+        </ul>
+      </div>
+      <div class="horizon">
+        <div class="d">60 <small>até o segundo mês</small></div>
+        <h4>Descoberta</h4>
+        <ul class="ul v">
+          <li>Realizar os workshops e estruturar os desafios</li>
+          <li>Aplicar os seis critérios e montar a matriz</li>
+          <li>Publicar a primeira versão do Repositório de Dores</li>
+          <li>Definir termos de piloto, dados e privacidade</li>
+        </ul>
+      </div>
+      <div class="horizon">
+        <div class="d">90 <small>fim do primeiro ciclo</small></div>
+        <h4>Abertura</h4>
+        <ul class="ul">
+          <li>Publicar a primeira chamada de desafios</li>
+          <li>Ativar canais junto ao ecossistema e ao fomento</li>
+          <li>Colocar o piloto-zero em campo com coleta de dados</li>
+          <li>Definir o painel de indicadores do programa</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:26px" class="rv">
+      <p class="eyebrow">Decisões necessárias nesta reunião</p>
+      <div class="grid g3">
+        <div class="decision"><span class="q">01</span><div><b>Aprovação do programa</b><p>Há mandato para o Hub estruturar a Jornada de Descoberta como iniciativa permanente?</p></div></div>
+        <div class="decision"><span class="q">02</span><div><b>Modelo de Discovery</b><p>Capacitação interna, consultoria, mentoria — ou o híbrido recomendado?</p></div></div>
+        <div class="decision"><span class="q">03</span><div><b>Unidade e áreas do piloto</b><p>Quais áreas entram nos primeiros workshops e onde roda o piloto-zero?</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b>Hub Conecta Impacta</b> · Jornada de Descoberta de Desafios</span>
+    <span>Proposta executiva · Dados de dimensionamento ilustrativos</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- fluxo do hero ---- */
+  var flow = [
+    ["Dor interna","área demandante"],
+    ["Desafio","estruturado"],
+    ["Chamada","pública"],
+    ["Startup","capital próprio"],
+    ["Piloto","ambiente real"],
+    ["Dados","evidência"],
+    ["Escala","rede Sesc"]
+  ];
+  var g = document.getElementById("flownodes");
+  if (g){
+    var NS = "http://www.w3.org/2000/svg";
+    flow.forEach(function(item, i){
+      var x = 60 + i * ((1020 - 60) / (flow.length - 1));
+      var grp = document.createElementNS(NS,"g");
+      if (!reduce){ grp.setAttribute("class","pop"); grp.setAttribute("style","animation-delay:" + (0.5 + i*0.12) + "s"); }
+      var c = document.createElementNS(NS,"circle");
+      c.setAttribute("cx",x); c.setAttribute("cy",40); c.setAttribute("r",7);
+      c.setAttribute("fill", i < 3 ? "#4EA9DC" : (i < 6 ? "#3FBF98" : "#F79A4B"));
+      c.setAttribute("stroke","#07293F"); c.setAttribute("stroke-width","3");
+      var t1 = document.createElementNS(NS,"text");
+      t1.setAttribute("x",x); t1.setAttribute("y",72); t1.setAttribute("text-anchor","middle");
+      t1.setAttribute("style","font-family:Archivo,sans-serif;font-weight:600;font-size:13px;fill:#EAF3F8");
+      t1.textContent = item[0];
+      var t2 = document.createElementNS(NS,"text");
+      t2.setAttribute("x",x); t2.setAttribute("y",92); t2.setAttribute("text-anchor","middle");
+      t2.setAttribute("style","font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;fill:#9DBACD");
+      t2.textContent = item[1];
+      grp.appendChild(c); grp.appendChild(t1); grp.appendChild(t2);
+      g.appendChild(grp);
+    });
+  }
+
+  /* ---- matriz impacto x esforco ---- */
+  var desafios = [
+    {n:"Estação meteorológica inteligente", e:3.0, i:8.0, real:true, esc:"Alta",
+     d:"Sensoriamento climático local com telemetria contínua. Investimento da startup já capitalizado; o Sesc entra com o ponto de instalação e o acompanhamento."},
+    {n:"Autoempréstimo de livros", e:3.4, i:7.5, real:true, esc:"Alta",
+     d:"Retirada e devolução autônomas na biblioteca. Reduz fila, libera a equipe para mediação de leitura e gera dados de circulação do acervo."},
+    {n:"Monitoramento de consumo de energia", e:4.4, i:8.6, real:false, esc:"Alta",
+     d:"Medição por circuito nas unidades, com alertas de desperdício. Alto impacto de custeio e forte apelo de sustentabilidade."},
+    {n:"Gestão inteligente de resíduos", e:2.6, i:5.2, real:false, esc:"Média",
+     d:"Sensoriamento de coletores e rota de retirada por demanda. Baixo esforço, ganho operacional localizado."},
+    {n:"Fila e fluxo de atendimento", e:5.6, i:6.6, real:false, esc:"Alta",
+     d:"Leitura de fluxo nos pontos de atendimento para redimensionar equipe e horários de pico."},
+    {n:"Acessibilidade digital do público", e:6.6, i:8.2, real:false, esc:"Alta",
+     d:"Recursos assistivos nos canais e ambientes. Alto impacto social, mas exige integração com sistemas existentes."},
+    {n:"Manutenção preditiva de equipamentos", e:7.6, i:7.0, real:false, esc:"Média",
+     d:"Sensores de vibração e temperatura em ativos críticos. Ganho real, porém com integração e calibração exigentes."},
+    {n:"Painel unificado de dados do público", e:6.2, i:5.4, real:false, esc:"Média",
+     d:"Consolidação de bases hoje dispersas. Depende de governança de dados antes da tecnologia."},
+    {n:"Reserva inteligente de espaços", e:4.0, i:4.4, real:false, esc:"Média",
+     d:"Agendamento autônomo de salas e quadras. Melhora a experiência, com impacto institucional moderado."}
+  ];
+  var pts = document.getElementById("mxpoints");
+  function sx(e){ return 70 + (e/10)*510; }
+  function sy(i){ return 380 - (i/10)*340; }
+  function fill(el, d){
+    document.getElementById("mxk").textContent = d.real ? "Caso já recebido" : "Desafio ilustrativo";
+    document.getElementById("mxh").textContent = d.n;
+    document.getElementById("mxp").textContent = d.d;
+    document.getElementById("mxi").textContent = d.i.toFixed(1).replace(".",",");
+    document.getElementById("mxe").textContent = d.e.toFixed(1).replace(".",",");
+    document.getElementById("mxs").textContent = d.esc;
+    document.getElementById("mxinfo").style.borderLeftColor = d.real ? "var(--verde)" : "var(--azul)";
+    Array.prototype.forEach.call(pts.children, function(c){ c.classList.remove("sel"); });
+    el.classList.add("sel");
+  }
+  if (pts){
+    var NS2 = "http://www.w3.org/2000/svg";
+    desafios.forEach(function(d, idx){
+      var grp = document.createElementNS(NS2,"g");
+      grp.setAttribute("class","pt"); grp.setAttribute("tabindex","0"); grp.setAttribute("role","button");
+      grp.setAttribute("aria-label", d.n + ". Impacto " + d.i + " de 10, esforço " + d.e + " de 10.");
+      var hit = document.createElementNS(NS2,"circle");
+      hit.setAttribute("class","h"); hit.setAttribute("cx",sx(d.e)); hit.setAttribute("cy",sy(d.i)); hit.setAttribute("r",18);
+      var c = document.createElementNS(NS2,"circle");
+      c.setAttribute("class","c"); c.setAttribute("cx",sx(d.e)); c.setAttribute("cy",sy(d.i));
+      c.setAttribute("r", d.real ? 8 : 6.5);
+      c.setAttribute("fill", d.real ? "var(--verde)" : "var(--azul)");
+      c.setAttribute("fill-opacity", d.real ? "1" : ".72");
+      grp.appendChild(hit); grp.appendChild(c);
+      grp.addEventListener("click", function(){ fill(grp, d); });
+      grp.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); fill(grp, d); } });
+      grp.addEventListener("mouseenter", function(){ fill(grp, d); });
+      pts.appendChild(grp);
+      if (idx === 0) grp.classList.add("sel");
+    });
+  }
+
+  /* ---- barra de progresso ---- */
+  var bar = document.getElementById("bar");
+  var dots = Array.prototype.slice.call(document.querySelectorAll("#dots a"));
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var railfill = document.getElementById("railfill");
+  var journey = document.getElementById("journey");
+
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
+
+    var mid = window.scrollY + window.innerHeight * 0.42;
+    var cur = null;
+    dots.forEach(function(a){
+      var sec = document.querySelector(a.getAttribute("href"));
+      if (sec && sec.offsetTop <= mid) cur = a;
+    });
+    dots.forEach(function(a){ a.classList.toggle("on", a === cur); });
+
+    if (journey && railfill){
+      var jt = journey.getBoundingClientRect().top + window.scrollY;
+      var p = (window.scrollY + window.innerHeight * 0.62 - jt) / journey.offsetHeight;
+      railfill.style.height = Math.max(0, Math.min(1, p)) * 100 + "%";
+      steps.forEach(function(s){
+        var st = s.getBoundingClientRect().top + window.scrollY;
+        s.classList.toggle("on", window.scrollY + window.innerHeight * 0.62 >= st);
+      });
+    }
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ---- reveal: so esconde o que ja esta fora da tela ---- */
+  if (!reduce && "IntersectionObserver" in window){
+    var revs = Array.prototype.slice.call(document.querySelectorAll(".rv"));
+    revs.forEach(function(el){
+      if (el.getBoundingClientRect().top > window.innerHeight) el.classList.add("rv--off");
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.remove("rv--off"); io.unobserve(en.target); }
+      });
+    }, {rootMargin:"0px 0px -12% 0px"});
+    revs.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---- contadores + barras das opcoes ---- */
+  function runCount(el){
+    var to = parseFloat(el.getAttribute("data-to"));
+    var suf = el.getAttribute("data-suffix") || "";
+    if (reduce || to === 0){ el.textContent = to + suf; return; }
+    var t0 = null, dur = 1100;
+    function tick(ts){
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + suf;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  var counters = Array.prototype.slice.call(document.querySelectorAll("[data-count]"));
+  var barsets = Array.prototype.slice.call(document.querySelectorAll("[data-bars]"));
+  function fillBars(box){
+    Array.prototype.forEach.call(box.querySelectorAll(".fill"), function(f, i){
+      setTimeout(function(){ f.style.width = f.getAttribute("data-w") + "%"; }, reduce ? 0 : i * 110);
+    });
+  }
+  if ("IntersectionObserver" in window){
+    var io2 = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (!en.isIntersecting) return;
+        if (en.target.hasAttribute("data-bars")) fillBars(en.target); else runCount(en.target);
+        io2.unobserve(en.target);
+      });
+    }, {threshold:.4});
+    counters.forEach(function(el){ io2.observe(el); });
+    barsets.forEach(function(el){ io2.observe(el); });
+  } else {
+    counters.forEach(runCount); barsets.forEach(fillBars);
+  }
+})();
+</script>
+</body>
+</html>
